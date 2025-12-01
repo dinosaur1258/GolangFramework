@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Job 1: 測試和建立
+  test:
+    name: Test and Build
+    runs-on: ubuntu-latest
+    
+    steps:
+    # 1. 簽出程式碼
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # 2. 設定 Go 環境
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24'
+
+    # 3. 快取 Go modules
+    - name: Cache Go modules
+      uses: actions/cache@v4
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    # 4. 下載依賴
+    - name: Download dependencies
+      run: go mod download
+
+    # 5. 檢查程式碼格式
+    - name: Check code format
+      run: |
+        if [ -n "$(gofmt -s -l .)" ]; then
+          echo "Code is not formatted. Run 'go fmt ./...'"
+          gofmt -s -l .
+          exit 1
+        fi
+
+    # 6. 執行 go vet（靜態分析）
+    - name: Run go vet
+      run: go vet ./...
+
+    # 7. 編譯程式
+    - name: Build
+      run: go build -v ./cmd/api
+
+    # 8. 執行測試（如果有的話）
+    - name: Run tests
+      run: go test -v ./...
+
+  # Job 2: 建立 Docker 映像
+  docker:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: test  # 等待 test job 完成
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    # 1. 簽出程式碼
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # 2. 設定 Docker Buildx
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    # 3. 登入 Docker Hub
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    # 4. 建立並推送 Docker 映像
+    - name: Build and push
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/golang-framework:latest
+          ${{ secrets.DOCKER_USERNAME }}/golang-framework:${{ github.sha }}
+        cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/golang-framework:buildcache
+        cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/golang-framework:buildcache,mode=max

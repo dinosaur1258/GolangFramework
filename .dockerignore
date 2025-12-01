@@ -1,0 +1,32 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+
+# 測試和臨時檔案
+*.test
+*.out
+*.log
+
+# 依賴
+vendor/
+
+# 編譯產物
+*.exe
+*.dll
+*.so
+*.dylib
+
+# 環境檔案
+.env
+.env.local
+
+# 文檔
+README.md
+docs/
+
+# CI/CD
+.github/

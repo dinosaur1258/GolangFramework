@@ -1,0 +1,15 @@
+server:
+  port: 8080
+  mode: debug  # debug, release, test
+
+database:
+  host: localhost
+  port: 5432
+  user: postgres
+  password: 890505
+  dbname: golang_framework
+  sslmode: disable
+
+jwt:
+  secret: your-secret-key-change-this-in-production
+  expire_hours: 24
