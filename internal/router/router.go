@@ -43,7 +43,16 @@ func SetupRouter(userHandler *handler.UserHandler, authHandler *handler.AuthHand
 			protected := users.Group("")
 			protected.Use(middleware.AuthMiddleware(jwtService))
 			{
+				// 個人資料
 				protected.GET("/profile", userHandler.GetProfile)
+				protected.PUT("/profile", userHandler.UpdateProfile)
+				protected.DELETE("/profile", userHandler.DeleteUser)
+
+				// 密碼管理
+				protected.PUT("/password", userHandler.ChangePassword)
+
+				// 用戶列表
+				protected.GET("", userHandler.ListUsers)
 			}
 		}
 	}

@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 資料庫
+  postgres:
+    image: postgres:16-alpine
+    container_name: deploy_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: golang_framework
+    ports:
+      - "5433:5432"  # 用不同的 port 避免衝突
+    volumes:
+      - deploy_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - deploy-network
+
+  # 從 Docker Hub 拉取的 API
+  api:
+    image: dinosaur1258/golang-framework:latest  # 從 Docker Hub 拉取
+    container_name: deploy_api
+    ports:
+      - "8081:8080"  # 用不同的 port
+    environment:
+      - GIN_MODE=release
+      - DOCKER_ENV=true
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - deploy-network
+    restart: unless-stopped
+    command: sh -c "migrate -path /app/db/migrations -database 'postgresql://postgres:postgres@postgres:5432/golang_framework?sslmode=disable' up && ./main"
+
+volumes:
+  deploy_postgres_data:
+
+networks:
+  deploy-network:
+    driver: bridge
