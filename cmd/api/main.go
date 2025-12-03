@@ -50,9 +50,15 @@ func main() {
 
 	// 依賴注入：Repository -> UseCase -> Handler
 	userRepo := postgres.NewUserRepository(db)
+
+	// 建立 UseCase
+	// Auth 使用 UserRepository 因為認證需要查詢用戶資料
+	authUseCase := usecase.NewAuthUseCase(userRepo) // ← 新增這行
 	userUseCase := usecase.NewUserUseCase(userRepo)
+
+	// 建立 Handler
+	authHandler := handler.NewAuthHandler(authUseCase, jwtService) // ← 修改這行
 	userHandler := handler.NewUserHandler(userUseCase)
-	authHandler := handler.NewAuthHandler(userUseCase, jwtService)
 
 	// 設定路由
 	r := router.SetupRouter(userHandler, authHandler, jwtService)

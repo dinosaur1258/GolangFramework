@@ -5,8 +5,8 @@ import (
 	"database/sql"
 
 	"github.com/dinosaur1258/GolangFramework/db/sqlc"
+	"github.com/dinosaur1258/GolangFramework/internal/domain/contract"
 	"github.com/dinosaur1258/GolangFramework/internal/domain/entity"
-	"github.com/dinosaur1258/GolangFramework/internal/domain/repository"
 )
 
 type userRepository struct {
@@ -14,9 +14,9 @@ type userRepository struct {
 }
 
 // 確保實作了 Interface
-var _ repository.UserRepository = (*userRepository)(nil)
+var _ contract.UserRepository = (*userRepository)(nil)
 
-func NewUserRepository(db *sql.DB) repository.UserRepository {
+func NewUserRepository(db *sql.DB) contract.UserRepository {
 	return &userRepository{
 		queries: sqlc.New(db),
 	}
@@ -118,9 +118,10 @@ func (r *userRepository) List(ctx context.Context, limit, offset int32) ([]*enti
 
 func (r *userRepository) Update(ctx context.Context, user *entity.User) error {
 	params := sqlc.UpdateUserParams{
-		ID:       user.ID,
-		Username: user.Username,
-		Email:    user.Email,
+		ID:           user.ID,
+		Username:     user.Username,
+		Email:        user.Email,
+		PasswordHash: user.PasswordHash,
 	}
 
 	updatedUser, err := r.queries.UpdateUser(ctx, params)

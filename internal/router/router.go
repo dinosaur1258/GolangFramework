@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// SetupRouter 設定主路由
 func SetupRouter(userHandler *handler.UserHandler, authHandler *handler.AuthHandler, jwtService *service.JWTService) *gin.Engine {
 	r := gin.New()
 
@@ -26,35 +27,9 @@ func SetupRouter(userHandler *handler.UserHandler, authHandler *handler.AuthHand
 			})
 		})
 
-		// Auth 相關路由（不需要認證）
-		auth := v1.Group("/auth")
-		{
-			auth.POST("/register", userHandler.Register)
-			auth.POST("/login", authHandler.Login)
-		}
-
-		// User 相關路由
-		users := v1.Group("/users")
-		{
-			// 公開路由
-			users.GET("/:id", userHandler.GetUser)
-
-			// 需要認證的路由
-			protected := users.Group("")
-			protected.Use(middleware.AuthMiddleware(jwtService))
-			{
-				// 個人資料
-				protected.GET("/profile", userHandler.GetProfile)
-				protected.PUT("/profile", userHandler.UpdateProfile)
-				protected.DELETE("/profile", userHandler.DeleteUser)
-
-				// 密碼管理
-				protected.PUT("/password", userHandler.ChangePassword)
-
-				// 用戶列表
-				protected.GET("", userHandler.ListUsers)
-			}
-		}
+		// 註冊各模組路由
+		SetupAuthRoutes(v1, userHandler, authHandler)
+		SetupUserRoutes(v1, userHandler, jwtService)
 	}
 
 	return r

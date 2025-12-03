@@ -22,37 +22,6 @@ func NewUserHandler(userUseCase *usecase.UserUseCase) *UserHandler {
 	}
 }
 
-// Register 註冊新用戶
-func (h *UserHandler) Register(c *gin.Context) {
-	var req request.RegisterRequest
-
-	// 解析並驗證請求
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.ErrorResponse(c, http.StatusBadRequest,
-			customerrors.CodeValidationFailed,
-			customerrors.MsgValidationFailed,
-			err.Error())
-		return
-	}
-
-	// 呼叫 UseCase
-	user, err := h.userUseCase.Register(c.Request.Context(), req)
-	if err != nil {
-		if err == customerrors.ErrUserAlreadyExists {
-			utils.ErrorResponse(c, http.StatusConflict,
-				customerrors.CodeUserAlreadyExists,
-				customerrors.MsgUserAlreadyExists)
-			return
-		}
-		utils.ErrorResponse(c, http.StatusInternalServerError,
-			customerrors.CodeInternalServer,
-			customerrors.MsgInternalServer)
-		return
-	}
-
-	utils.SuccessResponse(c, http.StatusCreated, "User registered successfully", user)
-}
-
 // GetUser 取得用戶資料
 func (h *UserHandler) GetUser(c *gin.Context) {
 	// 從 URL 參數取得 ID
