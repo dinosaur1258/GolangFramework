@@ -1,10 +1,31 @@
 package main
 
+// @title           Golang Clean Architecture API
+// @version         1.0
+// @description     這是一個使用 Gin 框架和乾淨架構的 RESTful API
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   API Support
+// @contact.url    http://www.swagger.io/support
+// @contact.email  support@swagger.io
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host      localhost:8080
+// @BasePath  /api/v1
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description 輸入 "Bearer {token}" 來進行認證
+
 import (
 	"fmt"
 	"log"
 	"os"
 
+	_ "github.com/dinosaur1258/GolangFramework/docs"
 	"github.com/dinosaur1258/GolangFramework/internal/handler"
 	"github.com/dinosaur1258/GolangFramework/internal/repository/postgres"
 	"github.com/dinosaur1258/GolangFramework/internal/router"

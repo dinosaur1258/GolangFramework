@@ -23,7 +23,18 @@ func NewAuthHandler(authUseCase *usecase.AuthUseCase, jwtService *service.JWTSer
 	}
 }
 
-// Register 註冊新用戶
+// Register godoc
+// @Summary      註冊新用戶
+// @Description  註冊一個新的用戶帳號
+// @Tags         認證
+// @Accept       json
+// @Produce      json
+// @Param        request body request.RegisterRequest true "註冊資料"
+// @Success      201  {object}  utils.Response{data=response.UserResponse}
+// @Failure      400  {object}  utils.Response
+// @Failure      409  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /auth/register [post]
 func (h *AuthHandler) Register(c *gin.Context) {
 	var req request.RegisterRequest
 
@@ -54,7 +65,18 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusCreated, "User registered successfully", user)
 }
 
-// Login 用戶登入
+// Login godoc
+// @Summary      用戶登入
+// @Description  使用 Email 和密碼登入
+// @Tags         認證
+// @Accept       json
+// @Produce      json
+// @Param        request body request.LoginRequest true "登入資料"
+// @Success      200  {object}  utils.Response{data=response.LoginResponse}
+// @Failure      400  {object}  utils.Response
+// @Failure      401  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /auth/login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req request.LoginRequest
 

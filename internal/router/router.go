@@ -5,6 +5,9 @@ import (
 	"github.com/dinosaur1258/GolangFramework/internal/middleware"
 	"github.com/dinosaur1258/GolangFramework/internal/service"
 	"github.com/gin-gonic/gin"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // SetupRouter 設定主路由
@@ -15,6 +18,9 @@ func SetupRouter(userHandler *handler.UserHandler, authHandler *handler.AuthHand
 	r.Use(middleware.Recovery())     // 自定義 panic 恢復
 	r.Use(gin.Logger())              // 日誌
 	r.Use(middleware.ErrorHandler()) // 錯誤處理
+
+	// Swagger 文檔路由
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// API v1 群組
 	v1 := r.Group("/api/v1")

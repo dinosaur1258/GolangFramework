@@ -22,7 +22,18 @@ func NewUserHandler(userUseCase *usecase.UserUseCase) *UserHandler {
 	}
 }
 
-// GetUser 取得用戶資料
+// GetUser godoc
+// @Summary      取得指定用戶
+// @Description  根據 ID 取得用戶資料
+// @Tags         用戶
+// @Accept       json
+// @Produce      json
+// @Param        id   path  int  true  "用戶 ID"
+// @Success      200  {object}  utils.Response{data=response.UserResponse}
+// @Failure      400  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /users/{id} [get]
 func (h *UserHandler) GetUser(c *gin.Context) {
 	// 從 URL 參數取得 ID
 	idStr := c.Param("id")
@@ -52,7 +63,17 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "User retrieved successfully", user)
 }
 
-// GetProfile 取得當前登入用戶的資料（需要認證）
+// GetProfile godoc
+// @Summary      取得個人資料(需要驗證)
+// @Description  取得當前登入用戶的資料
+// @Tags         用戶
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  utils.Response{data=response.UserResponse}
+// @Failure      401  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /users/profile [get]
 func (h *UserHandler) GetProfile(c *gin.Context) {
 	// 從 Context 取得用戶 ID（由 middleware 設定）
 	userID, exists := c.Get("user_id")
@@ -75,7 +96,20 @@ func (h *UserHandler) GetProfile(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "Profile retrieved successfully", user)
 }
 
-// UpdateProfile 更新當前用戶資料（需要認證）
+// UpdateProfile godoc
+// @Summary      更新個人資料(需要驗證)
+// @Description  更新當前登入用戶的資料
+// @Tags         用戶
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body request.UpdateUserRequest true "更新資料"
+// @Success      200  {object}  utils.Response{data=response.UserResponse}
+// @Failure      400  {object}  utils.Response
+// @Failure      401  {object}  utils.Response
+// @Failure      409  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /users/profile [put]
 func (h *UserHandler) UpdateProfile(c *gin.Context) {
 	// 從 Context 取得用戶 ID
 	userID, exists := c.Get("user_id")
@@ -113,7 +147,18 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "User updated successfully", user)
 }
 
-// DeleteUser 刪除用戶（需要認證，只能刪除自己）
+// DeleteUser godoc
+// @Summary      刪除帳號(需要驗證，只能刪除自己)
+// @Description  刪除當前登入用戶的帳號
+// @Tags         用戶
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  utils.Response
+// @Failure      401  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /users/profile [delete]
 func (h *UserHandler) DeleteUser(c *gin.Context) {
 	// 從 Context 取得用戶 ID
 	userID, exists := c.Get("user_id")
@@ -141,7 +186,20 @@ func (h *UserHandler) DeleteUser(c *gin.Context) {
 	utils.SuccessResponse(c, http.StatusOK, "User deleted successfully", nil)
 }
 
-// ListUsers 列出所有用戶（需要認證）
+// ListUsers godoc
+// @Summary      列出所有用戶(需要驗證)
+// @Description  取得用戶列表（分頁）
+// @Tags         用戶
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        page   query  int  false  "頁碼"  default(1)
+// @Param        limit  query  int  false  "每頁數量"  default(10)
+// @Success      200  {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Failure      401  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /users [get]
 func (h *UserHandler) ListUsers(c *gin.Context) {
 	var req request.ListUsersRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
@@ -168,7 +226,19 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 	})
 }
 
-// ChangePassword 修改密碼（需要認證）
+// ChangePassword godoc
+// @Summary      修改密碼(需要驗證)
+// @Description  修改當前登入用戶的密碼
+// @Tags         用戶
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request body request.ChangePasswordRequest true "密碼資料"
+// @Success      200  {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Failure      401  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /users/password [put]
 func (h *UserHandler) ChangePassword(c *gin.Context) {
 	// 從 Context 取得用戶 ID
 	userID, exists := c.Get("user_id")
