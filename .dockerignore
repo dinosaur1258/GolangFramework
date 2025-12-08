@@ -26,7 +26,8 @@ vendor/
 
 # 文檔
 README.md
-docs/
+# 不要忽略 docs，因為 go.mod replace 需要它
+#docs/
 
 # CI/CD
 .github/
