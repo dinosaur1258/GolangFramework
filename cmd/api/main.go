@@ -25,7 +25,7 @@ import (
 	"log"
 	"os"
 
-	//_ "github.com/dinosaur1258/GolangFramework/docs"
+	_ "github.com/dinosaur1258/GolangFramework/docs"
 	"github.com/dinosaur1258/GolangFramework/internal/handler"
 	"github.com/dinosaur1258/GolangFramework/internal/repository/postgres"
 	"github.com/dinosaur1258/GolangFramework/internal/router"
