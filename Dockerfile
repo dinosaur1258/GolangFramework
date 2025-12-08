@@ -12,11 +12,14 @@ RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/
 # 設定工作目錄
 WORKDIR /app
 
-# 先複製所有原始碼（包含 docs/）
-COPY . .
+# 複製 go mod 檔案
+COPY go.mod go.sum ./
 
 # 下載依賴
 RUN go mod download
+
+# 複製所有原始碼
+COPY . .
 
 # 編譯應用程式
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/api
