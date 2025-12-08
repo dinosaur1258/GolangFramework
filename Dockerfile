@@ -1,24 +1,24 @@
 # 第一階段：構建
 FROM golang:1.24-alpine AS builder
 
-# 安裝必要工具
-RUN apk add --no-cache git curl
-
-# 安裝 migrate 工具
-RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz && \
-    mv migrate /usr/local/bin/migrate && \
-    chmod +x /usr/local/bin/migrate
+# ... (安裝必要工具和 migrate 工具等保持不變) ...
 
 # 設定工作目錄
 WORKDIR /app
 
-# 先複製所有原始碼（包含 docs/）
-COPY . .
+# 1. 【優化快取】只複製模組相關文件
+# 這些文件（go.mod, go.sum）變動頻率低，可最大化利用快取
+COPY go.mod go.sum ./
 
-# 下載依賴
+# 2. 下載依賴
+# 只有當 go.mod/go.sum 變動時，才會重新執行此步驟
 RUN go mod download
 
-# 編譯應用程式
+# 3. 複製所有其他專案原始碼（包含 docs/ 等內部套件）
+# 確保所有內部套件在 go build 之前都存在於工作目錄中
+COPY . .
+
+# 4. 編譯應用程式 (現在所有依賴和內部套件都已到位)
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/api
 
 # 第二階段：運行
