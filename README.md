@@ -1,7 +1,7 @@
+# Author : Nolan(dinosaur1258)
+
 # GolangFramework
 Golang Clean Architecture Framework
-
-# Author : Nolan
 
 ## 📊 完整流程圖（視覺化）
 ```
