@@ -9,6 +9,11 @@ import (
 type SimpleMockUserRepository struct {
 	User  *entity.User
 	Error error
+
+	// 用於更精確控制的函數
+	GetByIDFunc       func(ctx context.Context, id int32) (*entity.User, error)
+	GetByEmailFunc    func(ctx context.Context, email string) (*entity.User, error)
+	GetByUsernameFunc func(ctx context.Context, username string) (*entity.User, error)
 }
 
 func (m *SimpleMockUserRepository) Create(ctx context.Context, user *entity.User) error {
@@ -16,14 +21,23 @@ func (m *SimpleMockUserRepository) Create(ctx context.Context, user *entity.User
 }
 
 func (m *SimpleMockUserRepository) GetByID(ctx context.Context, id int32) (*entity.User, error) {
+	if m.GetByIDFunc != nil {
+		return m.GetByIDFunc(ctx, id)
+	}
 	return m.User, m.Error
 }
 
 func (m *SimpleMockUserRepository) GetByEmail(ctx context.Context, email string) (*entity.User, error) {
+	if m.GetByEmailFunc != nil {
+		return m.GetByEmailFunc(ctx, email)
+	}
 	return m.User, m.Error
 }
 
 func (m *SimpleMockUserRepository) GetByUsername(ctx context.Context, username string) (*entity.User, error) {
+	if m.GetByUsernameFunc != nil {
+		return m.GetByUsernameFunc(ctx, username)
+	}
 	return m.User, m.Error
 }
 
