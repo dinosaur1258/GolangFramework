@@ -84,12 +84,12 @@ func main() {
 	userRepo := postgres.NewUserRepository(db)
 
 	// 建立 UseCase
-	// Auth 使用 UserRepository 因為認證需要查詢用戶資料
-	authUseCase := usecase.NewAuthUseCase(userRepo) // ← 新增這行
+	// ⭐ 修改:傳入 db 參數
+	authUseCase := usecase.NewAuthUseCase(userRepo, db) // ← 加入 db
 	userUseCase := usecase.NewUserUseCase(userRepo)
 
 	// 建立 Handler
-	authHandler := handler.NewAuthHandler(authUseCase, jwtService) // ← 修改這行
+	authHandler := handler.NewAuthHandler(authUseCase, jwtService)
 	userHandler := handler.NewUserHandler(userUseCase)
 
 	// 設定路由

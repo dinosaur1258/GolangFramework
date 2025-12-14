@@ -7,34 +7,46 @@ import (
 	"github.com/dinosaur1258/GolangFramework/db/sqlc"
 	"github.com/dinosaur1258/GolangFramework/internal/domain/contract"
 	"github.com/dinosaur1258/GolangFramework/internal/domain/entity"
+	"github.com/dinosaur1258/GolangFramework/pkg/database"
 )
 
 type userRepository struct {
-	queries *sqlc.Queries
+	db *sql.DB // 保留原本的 DB 連線
 }
 
-// 確保實作了 Interface
 var _ contract.UserRepository = (*userRepository)(nil)
 
 func NewUserRepository(db *sql.DB) contract.UserRepository {
 	return &userRepository{
-		queries: sqlc.New(db),
+		db: db,
 	}
 }
 
+// ⭐ 新增:智能選擇使用 DB 或 TX
+func (r *userRepository) getQueries(ctx context.Context) *sqlc.Queries {
+	// 如果 context 中有 transaction,就用 transaction
+	if tx, ok := database.GetTx(ctx); ok {
+		return sqlc.New(tx)
+	}
+	// 否則使用正常的 DB 連線
+	return sqlc.New(r.db)
+}
+
+// ⭐ 修改:使用 getQueries 取代原本的 r.queries
 func (r *userRepository) Create(ctx context.Context, user *entity.User) error {
+	queries := r.getQueries(ctx) // 智能選擇
+
 	params := sqlc.CreateUserParams{
 		Username:     user.Username,
 		Email:        user.Email,
 		PasswordHash: user.PasswordHash,
 	}
 
-	createdUser, err := r.queries.CreateUser(ctx, params)
+	createdUser, err := queries.CreateUser(ctx, params)
 	if err != nil {
 		return err
 	}
 
-	// 更新 user 的 ID 和時間
 	user.ID = createdUser.ID
 	user.CreatedAt = createdUser.CreatedAt
 	user.UpdatedAt = createdUser.UpdatedAt
@@ -43,7 +55,9 @@ func (r *userRepository) Create(ctx context.Context, user *entity.User) error {
 }
 
 func (r *userRepository) GetByID(ctx context.Context, id int32) (*entity.User, error) {
-	sqlcUser, err := r.queries.GetUserByID(ctx, id)
+	queries := r.getQueries(ctx) // 智能選擇
+
+	sqlcUser, err := queries.GetUserByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +73,9 @@ func (r *userRepository) GetByID(ctx context.Context, id int32) (*entity.User, e
 }
 
 func (r *userRepository) GetByEmail(ctx context.Context, email string) (*entity.User, error) {
-	sqlcUser, err := r.queries.GetUserByEmail(ctx, email)
+	queries := r.getQueries(ctx) // 智能選擇
+
+	sqlcUser, err := queries.GetUserByEmail(ctx, email)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +91,9 @@ func (r *userRepository) GetByEmail(ctx context.Context, email string) (*entity.
 }
 
 func (r *userRepository) GetByUsername(ctx context.Context, username string) (*entity.User, error) {
-	sqlcUser, err := r.queries.GetUserByUsername(ctx, username)
+	queries := r.getQueries(ctx) // 智能選擇
+
+	sqlcUser, err := queries.GetUserByUsername(ctx, username)
 	if err != nil {
 		return nil, err
 	}
@@ -91,12 +109,14 @@ func (r *userRepository) GetByUsername(ctx context.Context, username string) (*e
 }
 
 func (r *userRepository) List(ctx context.Context, limit, offset int32) ([]*entity.User, error) {
+	queries := r.getQueries(ctx) // 智能選擇
+
 	params := sqlc.ListUsersParams{
 		Limit:  limit,
 		Offset: offset,
 	}
 
-	sqlcUsers, err := r.queries.ListUsers(ctx, params)
+	sqlcUsers, err := queries.ListUsers(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -117,6 +137,8 @@ func (r *userRepository) List(ctx context.Context, limit, offset int32) ([]*enti
 }
 
 func (r *userRepository) Update(ctx context.Context, user *entity.User) error {
+	queries := r.getQueries(ctx) // 智能選擇
+
 	params := sqlc.UpdateUserParams{
 		ID:           user.ID,
 		Username:     user.Username,
@@ -124,7 +146,7 @@ func (r *userRepository) Update(ctx context.Context, user *entity.User) error {
 		PasswordHash: user.PasswordHash,
 	}
 
-	updatedUser, err := r.queries.UpdateUser(ctx, params)
+	updatedUser, err := queries.UpdateUser(ctx, params)
 	if err != nil {
 		return err
 	}
@@ -134,5 +156,6 @@ func (r *userRepository) Update(ctx context.Context, user *entity.User) error {
 }
 
 func (r *userRepository) Delete(ctx context.Context, id int32) error {
-	return r.queries.DeleteUser(ctx, id)
+	queries := r.getQueries(ctx) // 智能選擇
+	return queries.DeleteUser(ctx, id)
 }
