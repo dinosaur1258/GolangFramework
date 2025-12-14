@@ -29,7 +29,8 @@ Thumbs.db
 .env
 .env.local
 
-# Logs
+# 日誌檔案
+logs/
 *.log
 
 # Temporary files

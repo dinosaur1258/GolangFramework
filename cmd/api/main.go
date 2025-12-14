@@ -33,6 +33,8 @@ import (
 	"github.com/dinosaur1258/GolangFramework/internal/usecase"
 	"github.com/dinosaur1258/GolangFramework/pkg/config"
 	"github.com/dinosaur1258/GolangFramework/pkg/database"
+	"github.com/dinosaur1258/GolangFramework/pkg/logger"
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -47,6 +49,15 @@ func main() {
 	if err != nil {
 		log.Fatal("Failed to load config:", err)
 	}
+
+	// 初始化日誌系統
+	env := "development" // 或從 cfg.Server.Mode 讀取
+	if err := logger.InitLogger(env); err != nil {
+		log.Fatal("Failed to initialize logger:", err)
+	}
+	defer logger.Sync()
+
+	logger.Info("Application starting", zap.String("env", env))
 
 	// 建立資料庫連線
 	dbConfig := database.Config{
@@ -64,7 +75,7 @@ func main() {
 	}
 	defer db.Close()
 
-	log.Println("✅ Database connected successfully!")
+	logger.Info("Database connected successfully")
 
 	// 初始化 Services
 	jwtService := service.NewJWTService(cfg.JWT.Secret, cfg.JWT.ExpireHours)
@@ -86,7 +97,7 @@ func main() {
 
 	// 啟動伺服器
 	addr := fmt.Sprintf(":%s", cfg.Server.Port)
-	log.Printf("🚀 Server is running on %s", addr)
+	logger.Info("Server starting", zap.String("addr", addr))
 
 	if err := r.Run(addr); err != nil {
 		log.Fatal("Failed to start server:", err)
