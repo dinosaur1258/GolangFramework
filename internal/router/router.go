@@ -1,6 +1,8 @@
 package router
 
 import (
+	"time"
+
 	"github.com/dinosaur1258/GolangFramework/internal/handler"
 	"github.com/dinosaur1258/GolangFramework/internal/middleware"
 	"github.com/dinosaur1258/GolangFramework/internal/service"
@@ -14,16 +16,20 @@ import (
 func SetupRouter(userHandler *handler.UserHandler, authHandler *handler.AuthHandler, jwtService *service.JWTService) *gin.Engine {
 	r := gin.New()
 
-	// 全域中間件
-	r.Use(middleware.Recovery())     // 自定義 panic 恢復
-	r.Use(gin.Logger())              // 日誌
-	r.Use(middleware.ErrorHandler()) // 錯誤處理
+	// 全域中間件（按順序執行）
+	r.Use(middleware.Recovery())                // 1. Panic 恢復
+	r.Use(gin.Logger())                         // 2. 日誌
+	r.Use(middleware.RequestID())               // 3. Request ID（新增）
+	r.Use(middleware.CORS())                    // 4. CORS（新增）
+	r.Use(middleware.Timeout(30 * time.Second)) // 5. 超時控制（新增）
+	r.Use(middleware.ErrorHandler())            // 6. 錯誤處理
 
 	// Swagger 文檔路由
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// API v1 群組
 	v1 := r.Group("/api/v1")
+	v1.Use(middleware.RateLimit()) // API 群組使用一般限流（新增）
 	{
 		// 健康檢查
 		v1.GET("/health", func(c *gin.Context) {

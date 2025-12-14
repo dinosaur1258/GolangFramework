@@ -2,6 +2,7 @@ package router
 
 import (
 	"github.com/dinosaur1258/GolangFramework/internal/handler"
+	"github.com/dinosaur1258/GolangFramework/internal/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -9,7 +10,8 @@ import (
 func SetupAuthRoutes(rg *gin.RouterGroup, userHandler *handler.UserHandler, authHandler *handler.AuthHandler) {
 	auth := rg.Group("/auth")
 	{
-		auth.POST("/register", authHandler.Register) // 註冊
-		auth.POST("/login", authHandler.Login)       // 登入
+		// 註冊和登入使用嚴格限流（每分鐘 10 次）
+		auth.POST("/register", middleware.RateLimitStrict(), authHandler.Register)
+		auth.POST("/login", middleware.RateLimitStrict(), authHandler.Login)
 	}
 }
