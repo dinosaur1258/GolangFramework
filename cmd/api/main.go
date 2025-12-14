@@ -57,7 +57,7 @@ func main() {
 	}
 	defer logger.Sync()
 
-	logger.Info("Application starting", zap.String("env", env))
+	logger.Info("🚀 Application starting", zap.String("env", env))
 
 	// 建立資料庫連線
 	dbConfig := database.Config{
@@ -75,7 +75,7 @@ func main() {
 	}
 	defer db.Close()
 
-	logger.Info("Database connected successfully")
+	logger.Info("✅ Database connected successfully")
 
 	// 初始化 Services
 	jwtService := service.NewJWTService(cfg.JWT.Secret, cfg.JWT.ExpireHours)
@@ -97,7 +97,7 @@ func main() {
 
 	// 啟動伺服器
 	addr := fmt.Sprintf(":%s", cfg.Server.Port)
-	logger.Info("Server starting", zap.String("addr", addr))
+	logger.Info("🚀 Server starting", zap.String("addr", addr))
 
 	if err := r.Run(addr); err != nil {
 		log.Fatal("Failed to start server:", err)
